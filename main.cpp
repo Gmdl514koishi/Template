@@ -41,14 +41,15 @@ public:
 };
 
 class UndirectedMinimumSpanningTree {
+    using tuple = std::tuple<unsigned int, unsigned int, int>;
 private:
     struct Comparator {
-        bool operator()(const std::tuple<unsigned int, unsigned int, int>& a, const std::tuple<unsigned int, unsigned int, int>& b) const {
+        bool operator()(const tuple& a, const tuple& b) const {
             return std::get<2>(a) > std::get<2>(b);
         }
     };
-    std::priority_queue<std::tuple<unsigned int, unsigned int, int>, std::vector<std::tuple<unsigned int, unsigned int, int>>, Comparator> selected_edges_and_weights;
-    std::vector<std::tuple<unsigned int, unsigned int, int>> edges_and_weights;
+    std::priority_queue<tuple, std::vector<tuple>, Comparator> selected_edges_and_weights;
+    std::vector<tuple> edges_and_weights;
 public:
     UndirectedMinimumSpanningTree() : selected_edges_and_weights(), edges_and_weights() { }
     void add_edge(const int u, const int v, const int w = 1) {
