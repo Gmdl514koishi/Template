@@ -89,6 +89,27 @@ public:
         }
         return cost;
     }
+    int Kruskal(const unsigned int n) {
+        DisJointSet disjoint_set(n);
+        std::sort(edges_and_weights.begin(), edges_and_weights.end(), Comparator());
+        int cost = 0;
+        int include_cnt = 1;
+        for (auto edge : edges_and_weights) {
+            const int u = std::get<0>(edge);
+            const int v = std::get<1>(edge);
+            const int w = std::get<2>(edge);
+            if (disjoint_set.is_same(u, v) == true) {
+                continue;
+            }
+            disjoint_set.unite(u, v);
+            cost += w;
+            include_cnt++;
+        }
+        if (include_cnt != n) {
+            return -1;
+        }
+        return cost;
+    }
 };
 
 void solve() {
