@@ -58,7 +58,7 @@ public:
     void add_edge(const unsigned int u, const unsigned int v, const int w, const bool is_directed = false) {
         edges_and_weights.push_back(std::make_tuple(u, v, w, is_directed));
     }
-    int Prim(const unsigned int n) {
+    std::pair<bool, long long> Prim(const unsigned int n) {
         std::vector<bool> is_included(n, false);
         is_included[0] = true;
         for (auto edge : edges_and_weights) {
@@ -66,7 +66,7 @@ public:
                 selected_edges_and_weights.push(edge);
             }
         }
-        int cost = 0;
+        long long cost = 0;
         int include_cnt = 1;
         while (selected_edges_and_weights.empty() == false && include_cnt < n) {
             const auto edge = selected_edges_and_weights.top();
@@ -88,11 +88,11 @@ public:
             }
         }
         if (include_cnt != n) {
-            return -1;
+            return std::make_pair(false, is_included.size() - std::count(is_included.begin(), is_included.end(), false));
         }
-        return cost;
+        return std::make_pair(true, cost);
     }
-    int Kruskal(const unsigned int n) {
+    std::pair<bool, long long> Kruskal(const unsigned int n) {
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
             if (std::get<3>(edge) == true) {
@@ -113,10 +113,11 @@ public:
             disjoint_set.unite(u, v);
             cost += w;
         }
-        if (disjoint_set.count_connected_components() != 1) {
-            return -1;
+        int spannint_trees_cnt = disjoint_set.count_connected_components();
+        if (spannint_trees_cnt != 1) {
+            return std::make_pair(false, spannint_trees_cnt);
         }
-        return cost;
+        return std::make_pair(true, cost);
     }
 };
 
