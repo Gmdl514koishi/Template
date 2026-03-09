@@ -38,10 +38,13 @@ public:
     bool is_same(int x, int y) {
         return find_root(x) == find_root(y);
     }
+    int count_connected_components() {
+        return std::count_if(root_node_and_depth.begin(), root_node_and_depth.end(), [](const int x) {return x < 0;});
+    }
 };
 
 class UndirectedMinimumSpanningTree {
-    using tuple = std::tuple<unsigned int, unsigned int, int>;
+    using tuple = std::tuple<unsigned int, unsigned int, int, bool>;
 private:
     struct Comparator {
         bool operator()(const tuple& a, const tuple& b) const {
@@ -52,8 +55,8 @@ private:
     std::vector<tuple> edges_and_weights;
 public:
     UndirectedMinimumSpanningTree() : selected_edges_and_weights(), edges_and_weights() { }
-    void add_edge(const int u, const int v, const int w = 1) {
-        edges_and_weights.push_back(std::make_tuple(u, v, w));
+    void add_edge(const unsigned int u, const unsigned int v, const int w, const bool is_directed = false) {
+        edges_and_weights.push_back(std::make_tuple(u, v, w, is_directed));
     }
     int Prim(const unsigned int n) {
         std::vector<bool> is_included(n, false);
@@ -76,7 +79,7 @@ public:
             }
             cost += w;
             include_cnt++;
-            const int next = is_included[u] == false ? u : v;
+            const unsigned int next = is_included[u] == false ? u : v;
             is_included[next] = true;
             for (auto edge : edges_and_weights) {
                 if ((std::get<0>(edge) == next && is_included[std::get<1>(edge)] == false) || (std::get<1>(edge) == next && is_included[std::get<0>(edge)] == false)) {
@@ -92,24 +95,25 @@ public:
     int Kruskal(const unsigned int n) {
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
-            selected_edges_and_weights.push(edge);
+            if (std::get<3>(edge) == true) {
+                disjoint_set.unite(std::get<0>(edge), std::get<1>(edge));
+            }
+            else {
+                selected_edges_and_weights.push(edge);
+            }
         }
-        int cost = 0;
-        int include_cnt = 1;
-        while (selected_edges_and_weights.empty() == false && include_cnt < n) {
+        long long cost = 0;
+        while (!selected_edges_and_weights.empty()) {
             const auto edge = selected_edges_and_weights.top();
             selected_edges_and_weights.pop();
-            const int u = std::get<0>(edge);
-            const int v = std::get<1>(edge);
-            const int w = std::get<2>(edge);
+            const auto [u, v, w, _] = edge;
             if (disjoint_set.is_same(u, v) == true) {
                 continue;
             }
             disjoint_set.unite(u, v);
             cost += w;
-            include_cnt++;
         }
-        if (include_cnt != n) {
+        if (disjoint_set.count_connected_components() != 1) {
             return -1;
         }
         return cost;
@@ -117,6 +121,7 @@ public:
 };
 
 void solve() {
+    using namespace std;
     // code
 }
 
