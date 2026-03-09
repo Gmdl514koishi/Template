@@ -122,6 +122,34 @@ public:
         }
         return std::make_pair(true, cost);
     }
+    int number_of_undirected_minimum_spanning_trees(const int n) {
+        DisJointSet disjoint_set(n);
+        std::sort(edges_and_weights.begin(), edges_and_weights.end(), [](const tuple& a, const tuple& b) {
+            return std::get<2>(a) < std::get<2>(b);
+        });
+        size_t index = 0;
+        for (; index < edges_and_weights.size(); index++) {
+            if (disjoint_set.count_connected_components() == 2) {
+                break;
+            }
+            const tuple& edge = edges_and_weights[index];
+            const unsigned int u = std::get<0>(edge);
+            const unsigned int v = std::get<1>(edge);
+            disjoint_set.unite(u, v);
+        }
+        int weight = std::get<2>(edges_and_weights[index]);
+        int cnt = 0;
+        while (index < edges_and_weights.size() && std::get<2>(edges_and_weights[index]) == weight) {
+            const tuple& edge = edges_and_weights[index];
+            const unsigned int u = std::get<0>(edge);
+            const unsigned int v = std::get<1>(edge);
+            if (disjoint_set.is_same(u, v) == false) {
+                cnt++;
+            }
+            index++;
+        }
+        return cnt;
+    }
 };
 
 void solve() {
