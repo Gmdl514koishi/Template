@@ -10,6 +10,7 @@ private:
 public:
     DisJointSet(const int n) : root_node_and_depth(n, -1) {}
     int find_root(int x) {
+        // find root and do path compression
         int root = x;
         while (root_node_and_depth[root] >= 0) {
             root = root_node_and_depth[root];
@@ -21,7 +22,8 @@ public:
         }
         return root;
     }
-    void unite(int x, int y) { 
+    void unite(int x, int y) {
+        // unite by depth
         x = find_root(x);
         y = find_root(y);
         const unsigned int x_depth = root_node_and_depth[x];
@@ -36,9 +38,11 @@ public:
         }
     }
     bool is_same(int x, int y) {
+        // return true if x and y are in the same set, otherwise return false
         return find_root(x) == find_root(y);
     }
     int count_connected_components() {
+        // return the number of connected components
         return std::count_if(root_node_and_depth.begin(), root_node_and_depth.end(), [](const int x) {return x < 0;});
     }
 };
@@ -88,9 +92,9 @@ public:
                 }
             }
         }
-        int spaning_trees_cnt = std::count(is_included.begin(), is_included.end(), false);
+        int not_in_disjoint = std::count(is_included.begin(), is_included.end(), false);
         if (include_cnt != n) {
-            return std::make_pair(false, spaning_trees_cnt);
+            return std::make_pair(false, not_in_disjoint);
         }
         return std::make_pair(true, cost);
     }
@@ -122,7 +126,8 @@ public:
         }
         return std::make_pair(true, cost);
     }
-    int number_of_undirected_minimum_spanning_trees(const int n) {
+    int number_of_undirected_minimum_spanning_trees(const unsigned int n) {
+        // return the number of undirected minimum spanning trees in a graph
         DisJointSet disjoint_set(n);
         std::sort(edges_and_weights.begin(), edges_and_weights.end(), [](const tuple& a, const tuple& b) {
             return std::get<2>(a) < std::get<2>(b);
@@ -136,6 +141,9 @@ public:
             const unsigned int u = std::get<0>(edge);
             const unsigned int v = std::get<1>(edge);
             disjoint_set.unite(u, v);
+        }
+        while (index < edges_and_weights.size() && disjoint_set.is_same(std::get<0>(edges_and_weights[index]), std::get<1>(edges_and_weights[index])) == true) {
+            index++;
         }
         int weight = std::get<2>(edges_and_weights[index]);
         int cnt = 0;
