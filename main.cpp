@@ -65,7 +65,7 @@ public:
         }
         int cost = 0;
         int include_cnt = 1;
-        while (selected_edges_and_weights.empty() == false && include_cnt != n) {
+        while (selected_edges_and_weights.empty() == false && include_cnt < n) {
             const auto edge = selected_edges_and_weights.top();
             selected_edges_and_weights.pop();
             const int u = std::get<0>(edge);
@@ -91,10 +91,14 @@ public:
     }
     int Kruskal(const unsigned int n) {
         DisJointSet disjoint_set(n);
-        std::sort(edges_and_weights.begin(), edges_and_weights.end(), Comparator());
+        for (auto edge : edges_and_weights) {
+            selected_edges_and_weights.push(edge);
+        }
         int cost = 0;
         int include_cnt = 1;
-        for (auto edge : edges_and_weights) {
+        while (selected_edges_and_weights.empty() == false && include_cnt < n) {
+            const auto edge = selected_edges_and_weights.top();
+            selected_edges_and_weights.pop();
             const int u = std::get<0>(edge);
             const int v = std::get<1>(edge);
             const int w = std::get<2>(edge);
