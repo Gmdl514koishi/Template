@@ -59,6 +59,7 @@ public:
         edges_and_weights.push_back(std::make_tuple(u, v, w, is_directed));
     }
     std::pair<bool, long long> Prim(const unsigned int n) {
+        // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
         std::vector<bool> is_included(n, false);
         is_included[0] = true;
         for (auto edge : edges_and_weights) {
@@ -87,12 +88,14 @@ public:
                 }
             }
         }
+        int spaning_trees_cnt = std::count(is_included.begin(), is_included.end(), false);
         if (include_cnt != n) {
-            return std::make_pair(false, is_included.size() - std::count(is_included.begin(), is_included.end(), false));
+            return std::make_pair(false, spaning_trees_cnt);
         }
         return std::make_pair(true, cost);
     }
     std::pair<bool, long long> Kruskal(const unsigned int n) {
+        // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
             if (std::get<3>(edge) == true) {
@@ -113,9 +116,9 @@ public:
             disjoint_set.unite(u, v);
             cost += w;
         }
-        int spannint_trees_cnt = disjoint_set.count_connected_components();
-        if (spannint_trees_cnt != 1) {
-            return std::make_pair(false, spannint_trees_cnt);
+        int spanning_trees_cnt = disjoint_set.count_connected_components();
+        if (spanning_trees_cnt != 1) {
+            return std::make_pair(false, spanning_trees_cnt);
         }
         return std::make_pair(true, cost);
     }
