@@ -120,7 +120,7 @@ public:
     }
 
     KruskalResult Kruskal(const unsigned int n, const bool search_unique_spanning_tree = false) {
-        // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
+        // return {false, false, -1, spanning_tree_cnt} if there are more than 1 spanning trees, otherwise return {true, is_unique, cost, spanning_tree_cnt}
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
             if (edge.is_directed == true) {
