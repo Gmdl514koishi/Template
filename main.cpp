@@ -7,6 +7,7 @@
 class DisJointSet {
 private:
     std::vector<int> root_node_and_depth;
+
 public:
     DisJointSet(const int n) : root_node_and_depth(n, -1) {}
     int find_root(int x) {
