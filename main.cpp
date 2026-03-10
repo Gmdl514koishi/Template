@@ -119,7 +119,7 @@ public:
         return std::make_pair(true, cost);
     }
 
-    KruskalResult Kruskal(const unsigned int n) {
+    KruskalResult Kruskal(const unsigned int n, const bool search_unique_spanning_tree = false) {
         // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
@@ -134,7 +134,7 @@ public:
         bool is_unique = true;
         while (!selected_edges_and_weights.empty()) {
             const int this_edge_weight = selected_edges_and_weights.top().weight;
-            if (is_unique == true) {
+            if (search_unique_spanning_tree == true && is_unique == true) {
                 std::vector<Edge> same_weight_edges;
                 while (!selected_edges_and_weights.empty() && selected_edges_and_weights.top().weight == this_edge_weight) {
                     same_weight_edges.push_back(selected_edges_and_weights.top());
