@@ -22,6 +22,7 @@ public:
         }
         return root;
     }
+
     void unite(int x, int y) {
         // unite by depth
         x = find_root(x);
@@ -37,10 +38,12 @@ public:
             --root_node_and_depth[x];
         }
     }
+
     bool is_same(int x, int y) {
         // return true if x and y are in the same set, otherwise return false
         return find_root(x) == find_root(y);
     }
+
     int count_connected_components() {
         // return the number of connected components
         return std::count_if(root_node_and_depth.begin(), root_node_and_depth.end(), [](const int x) {return x < 0;});
@@ -48,26 +51,42 @@ public:
 };
 
 class UndirectedMinimumSpanningTree {
-    using tuple = std::tuple<unsigned int, unsigned int, int, bool>;
 private:
+    struct Edge {
+        unsigned int u;
+        unsigned int v;
+        int weight;
+        bool is_directed;
+    };
+
     struct Comparator {
-        bool operator()(const tuple& a, const tuple& b) const {
-            return std::get<2>(a) > std::get<2>(b);
+        bool operator()(const Edge& a, const Edge& b) const {
+            return a.weight > b.weight;
         }
     };
-    std::priority_queue<tuple, std::vector<tuple>, Comparator> selected_edges_and_weights;
-    std::vector<tuple> edges_and_weights;
+
+    struct KruskalResult {
+        bool connected;
+        bool is_unique;
+        long long cost;
+        unsigned int spaning_tree_cnt;
+    };
+    
+    std::priority_queue<Edge, std::vector<Edge>, Comparator> selected_edges_and_weights;
+    std::vector<Edge> edges_and_weights;
+
 public:
     UndirectedMinimumSpanningTree() : selected_edges_and_weights(), edges_and_weights() { }
     void add_edge(const unsigned int u, const unsigned int v, const int w, const bool is_directed = false) {
-        edges_and_weights.push_back(std::make_tuple(u, v, w, is_directed));
+        edges_and_weights.push_back(Edge{u, v, w, is_directed});
     }
+
     std::pair<bool, long long> Prim(const unsigned int n) {
         // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
         std::vector<bool> is_included(n, false);
         is_included[0] = true;
         for (auto edge : edges_and_weights) {
-            if (std::get<0>(edge) == 0 || std::get<1>(edge) == 0) {
+            if (edge.u == 0 || edge.v == 0) {
                 selected_edges_and_weights.push(edge);
             }
         }
@@ -76,9 +95,9 @@ public:
         while (selected_edges_and_weights.empty() == false && include_cnt < n) {
             const auto edge = selected_edges_and_weights.top();
             selected_edges_and_weights.pop();
-            const int u = std::get<0>(edge);
-            const int v = std::get<1>(edge);
-            const int w = std::get<2>(edge);
+            const int u = edge.u;
+            const int v = edge.v;
+            const int w = edge.weight;
             if (is_included[u] == true && is_included[v] == true) {
                 continue;
             }
@@ -87,7 +106,7 @@ public:
             const unsigned int next = is_included[u] == false ? u : v;
             is_included[next] = true;
             for (auto edge : edges_and_weights) {
-                if ((std::get<0>(edge) == next && is_included[std::get<1>(edge)] == false) || (std::get<1>(edge) == next && is_included[std::get<0>(edge)] == false)) {
+                if ((edge.u == next && is_included[edge.v] == false) || (edge.v == next && is_included[edge.u] == false)) {
                     selected_edges_and_weights.push(edge);
                 }
             }
@@ -98,65 +117,65 @@ public:
         }
         return std::make_pair(true, cost);
     }
-    std::pair<bool, long long> Kruskal(const unsigned int n) {
+
+    KruskalResult Kruskal(const unsigned int n) {
         // return false if there are more than 1 spanning trees, otherwise return true and the cost of the minimum spanning tree
         DisJointSet disjoint_set(n);
         for (auto edge : edges_and_weights) {
-            if (std::get<3>(edge) == true) {
-                disjoint_set.unite(std::get<0>(edge), std::get<1>(edge));
+            if (edge.is_directed == true) {
+                disjoint_set.unite(edge.u, edge.v);
             }
             else {
                 selected_edges_and_weights.push(edge);
             }
         }
         long long cost = 0;
+        bool is_unique = true;
         while (!selected_edges_and_weights.empty()) {
-            const auto edge = selected_edges_and_weights.top();
-            selected_edges_and_weights.pop();
-            const auto [u, v, w, _] = edge;
-            if (disjoint_set.is_same(u, v) == true) {
-                continue;
+            const int this_edge_weight = selected_edges_and_weights.top().weight;
+            if (is_unique == true) {
+                std::vector<Edge> same_weight_edges;
+                while (!selected_edges_and_weights.empty() && selected_edges_and_weights.top().weight == this_edge_weight) {
+                    same_weight_edges.push_back(selected_edges_and_weights.top());
+                    selected_edges_and_weights.pop();
+                }
+                int valid_edge_cnt = 0;
+                for (const auto& edge : same_weight_edges) {
+                    const auto [u, v, w, is_directed] = edge;
+                    if (disjoint_set.is_same(u, v) == false) {
+                        valid_edge_cnt++;
+                    }
+                }
+                int selected_valid_edge_cnt = 0;
+                while (!same_weight_edges.empty()) {
+                    const auto [u, v, w, is_directsd] = same_weight_edges.back();
+                    same_weight_edges.pop_back();
+                    if (disjoint_set.is_same(u, v) == false) {
+                        disjoint_set.unite(u, v);
+                        cost += w;
+                        selected_valid_edge_cnt++;
+                    }
+                }
+                if (valid_edge_cnt > selected_valid_edge_cnt) {
+                    is_unique = false;
+                }
             }
-            disjoint_set.unite(u, v);
-            cost += w;
+            else {
+                const auto [u, v, w, is_directed] = selected_edges_and_weights.top();
+                selected_edges_and_weights.pop();
+                if (disjoint_set.is_same(u, v) == true) {
+                    continue;
+                }
+                disjoint_set.unite(u, v);
+                cost += w;
+            }
         }
-        int spanning_trees_cnt = disjoint_set.count_connected_components();
+        unsigned int spanning_trees_cnt = disjoint_set.count_connected_components();
+        KruskalResult result;
         if (spanning_trees_cnt != 1) {
-            return std::make_pair(false, spanning_trees_cnt);
+            return result = {false, false, -1, spanning_trees_cnt};
         }
-        return std::make_pair(true, cost);
-    }
-    int number_of_undirected_minimum_spanning_trees(const unsigned int n) {
-        // return the number of undirected minimum spanning trees in a graph
-        DisJointSet disjoint_set(n);
-        std::sort(edges_and_weights.begin(), edges_and_weights.end(), [](const tuple& a, const tuple& b) {
-            return std::get<2>(a) < std::get<2>(b);
-        });
-        size_t index = 0;
-        for (; index < edges_and_weights.size(); index++) {
-            if (disjoint_set.count_connected_components() == 2) {
-                break;
-            }
-            const tuple& edge = edges_and_weights[index];
-            const unsigned int u = std::get<0>(edge);
-            const unsigned int v = std::get<1>(edge);
-            disjoint_set.unite(u, v);
-        }
-        while (index < edges_and_weights.size() && disjoint_set.is_same(std::get<0>(edges_and_weights[index]), std::get<1>(edges_and_weights[index])) == true) {
-            index++;
-        }
-        int weight = std::get<2>(edges_and_weights[index]);
-        int cnt = 0;
-        while (index < edges_and_weights.size() && std::get<2>(edges_and_weights[index]) == weight) {
-            const tuple& edge = edges_and_weights[index];
-            const unsigned int u = std::get<0>(edge);
-            const unsigned int v = std::get<1>(edge);
-            if (disjoint_set.is_same(u, v) == false) {
-                cnt++;
-            }
-            index++;
-        }
-        return cnt;
+        return result = {true, is_unique, cost, spanning_trees_cnt};
     }
 };
 
