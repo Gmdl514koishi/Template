@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <queue>
 #include <tuple>
@@ -197,6 +198,17 @@ int main() {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
+    //
+    #ifdef LOCAL
+    std::ifstream fin("in.txt");
+    std::ofstream fout("out.txt");
+    if (!fin.is_open() || !fout.is_open()) {
+        std::cerr << "files not opened\n";
+        return 1;
+    }
+    std::cin.rdbuf(fin.rdbuf());
+    std::cout.rdbuf(fout.rdbuf());
+#endif
     //
     run();
 }
