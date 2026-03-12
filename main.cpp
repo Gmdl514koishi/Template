@@ -199,7 +199,7 @@ int main() {
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
     //
-    #ifdef LOCAL
+#ifdef LOCAL
     std::ifstream fin("in.txt");
     std::ofstream fout("out.txt");
     if (!fin.is_open() || !fout.is_open()) {

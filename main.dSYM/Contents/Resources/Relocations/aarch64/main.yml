@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/koishi/Documents/Github/Gmdl514koishi/Template/main'
+relocations:     []
+...
