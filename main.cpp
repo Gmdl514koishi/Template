@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <queue>
 #include <tuple>
 #include <vector>
@@ -181,6 +182,46 @@ public:
     }
 };
 
+class shortest_path {
+private:
+    struct Edge {
+        int u, v;
+        int weight;
+    };
+    std::vector<Edge> edges_and_weights;
+
+public:
+    void add_edge(const int u, const int v, const int w) {
+        edges_and_weights.push_back(Edge{u, v, w});
+    }
+
+    std::vector<std::vector<int>> Floyd(const int n, const bool is_directed) {
+        std::vector<std::vector<int>> floyd_map(n, std::vector<int>(n, std::numeric_limits<int>::max()));
+        for (int i = 0; i < n; ++i) {
+            floyd_map[i][i] = 0;
+        }
+        for (auto &edge : edges_and_weights) {
+            const int u = edge.u;
+            const int v = edge.v;
+            const int w = edge.weight;
+            floyd_map[u][v] = std::min(floyd_map[u][v], w);
+            if (is_directed) {
+                floyd_map[v][u] = std::min(floyd_map[v][u], w);
+            }
+        }
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (floyd_map[i][k] != std::numeric_limits<int>::max() && floyd_map[k][j] != std::numeric_limits<int>::max()) {
+                        floyd_map[i][j] = std::min(floyd_map[i][j], floyd_map[i][k] + floyd_map[k][j]);
+                    }
+                }
+            }
+        }
+        return floyd_map;
+    }
+};
+
 void solve() {
     using namespace std;
     // code
@@ -199,7 +240,7 @@ int main() {
     std::cin.tie(nullptr);
     std::cout.tie(nullptr);
     //
-#ifdef LOCAL
+    #ifdef LOCAL
     std::ifstream fin("in.txt");
     std::ofstream fout("out.txt");
     if (!fin.is_open() || !fout.is_open()) {
@@ -208,7 +249,7 @@ int main() {
     }
     std::cin.rdbuf(fin.rdbuf());
     std::cout.rdbuf(fout.rdbuf());
-#endif
+    #endif
     //
     run();
 }
