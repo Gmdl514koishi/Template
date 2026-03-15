@@ -4,6 +4,7 @@
 #include <limits>
 #include <queue>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 class DisJointSet {
@@ -81,7 +82,7 @@ private:
 public:
     UndirectedMinimumSpanningTree() : selected_edges_and_weights(), edges_and_weights() { }
     void add_edge(const unsigned int u, const unsigned int v, const int w, const bool is_directed = false) {
-        edges_and_weights.push_back(Edge{u, v, w, is_directed});
+        edges_and_weights.emplace_back(u, v, w, is_directed);
     }
 
     std::pair<bool, long long> Prim(const unsigned int n) {
@@ -183,6 +184,10 @@ public:
 };
 
 class shortest_path {
+    using Graph_Floyd = std::vector<std::vector<int>>;
+    using Graph_Dijkstra = std::vector<int>;
+    using Graph_BellmanFord = std::vector<int>;
+    using WeightedAdjacencyList = std::unordered_map<int, std::vector<std::pair<int, int>>>;
 private:
     struct Edge {
         int u, v;
@@ -192,11 +197,11 @@ private:
 
 public:
     void add_edge(const int u, const int v, const int w) {
-        edges_and_weights.push_back(Edge{u, v, w});
+        edges_and_weights.emplace_back(u, v, w);
     }
 
-    std::vector<std::vector<int>> Floyd(const int n, const bool is_directed) {
-        std::vector<std::vector<int>> floyd_map(n, std::vector<int>(n, std::numeric_limits<int>::max()));
+    Graph_Floyd Floyd(const unsigned int n, const bool is_directed) {
+        Graph_Floyd floyd_map(n, std::vector<int>(n, std::numeric_limits<int>::max()));
         for (int i = 0; i < n; ++i) {
             floyd_map[i][i] = 0;
         }
@@ -205,7 +210,7 @@ public:
             const int v = edge.v;
             const int w = edge.weight;
             floyd_map[u][v] = std::min(floyd_map[u][v], w);
-            if (is_directed) {
+            if (!is_directed) {
                 floyd_map[v][u] = std::min(floyd_map[v][u], w);
             }
         }
@@ -219,6 +224,44 @@ public:
             }
         }
         return floyd_map;
+    }
+
+    Graph_Dijkstra Dijkstra(const unsigned int n, const bool is_directed) {
+        WeightedAdjacencyList adjacency_list;
+        for (auto &edge : edges_and_weights) {
+            const unsigned int u = edge.u;
+            const unsigned int v = edge.v;
+            const unsigned int w = edge.weight;
+            adjacency_list[u].emplace_back(v, w);
+            if (!is_directed) {
+                adjacency_list[v].emplace_back(u, w);
+            }
+        }
+        std::vector<int> dijkstra_map(n, std::numeric_limits<int>::max());
+        std::vector<bool> is_visited(n, false);
+        int visited_node = 0;
+        for (int i = 1; i < n; ++i) {
+            int min_dist = std::numeric_limits<int>::max();
+            int min_dist_node = -1;
+            for (auto &edge : adjacency_list[i]) {
+                const unsigned int v = edge.first;
+                const unsigned int w = edge.second;
+                if (!is_visited[edge.first] && dijkstra_map[edge.first] > dijkstra_map[visited_node] + edge.second) {
+                    dijkstra_map[edge.first] = dijkstra_map[visited_node] + edge.second;
+                    if (min_dist_node == -1 || dijkstra_map[edge.first] < dijkstra_map[min_dist_node]) {
+                        min_dist_node = edge.first;
+                    }
+                }
+            }
+            if (min_dist_node != -1) {
+                visited_node = min_dist_node;
+                is_visited[visited_node] = true;
+            }
+            else {
+                break;
+            }
+        }
+        return dijkstra_map;
     }
 };
 
